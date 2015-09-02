@@ -21,7 +21,6 @@ main = do
     runEffect $ eventEntry (fromHandle hin)
     >-> U.finalStates >-> U.groupByMother
     >-> P.map (variables . mconcat . map part)
-    -- >-> P.take 3
     >-> P.print
 
 part :: [Particle] -> KinematicObjects
@@ -46,8 +45,7 @@ variables KinematicObjects { .. } =
       mVisible = invariantMass visible
       mEffective = invariantMass (fourMomentum missing : visible)
       mT2 = if length visible == 2
-            then let visA = head visible
-                     visB = (head . tail) visible
+            then let [visA, visB] = visible
                  in mT2AsymmBisect visA visB missing 0 0
             else -1
   in [ ("mTtrue",   mTtrue)
