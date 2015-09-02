@@ -2,15 +2,16 @@
 
 module Main where
 
-import           Data.List               (partition)
+import           Data.List                   (partition)
 import           Pipes
-import           Pipes.ByteString        (fromHandle)
-import qualified Pipes.Prelude           as P
-import           System.Environment      (getArgs)
-import           System.IO               (IOMode (..), withFile)
+import           Pipes.ByteString            (fromHandle)
+import qualified Pipes.Prelude               as P
+import           System.Environment          (getArgs)
+import           System.IO                   (IOMode (..), withFile)
 
 import           HEP.Data.LHEF
-import qualified HEP.Data.LHEF.PipesUtil as U
+import qualified HEP.Data.LHEF.PipesUtil     as U
+import           HEP.Kinematics.Variable.MT2 (mT2AsymmBisect)
 
 main :: IO ()
 main = do
@@ -44,7 +45,13 @@ variables KinematicObjects { .. } =
   let mTtrue = transverseMassCluster visible missing
       mVisible = invariantMass visible
       mEffective = invariantMass (fourMomentum missing : visible)
+      mT2 = if length visible == 2
+            then let visA = head visible
+                     visB = (head . tail) visible
+                 in mT2AsymmBisect visA visB missing 0 0
+            else -1
   in [ ("mTtrue",   mTtrue)
      , ("mVisible", mVisible)
      , ("mEffective", mEffective)
+     , ("mT2", mT2)
      ]

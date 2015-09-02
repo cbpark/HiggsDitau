@@ -1,7 +1,10 @@
-flags: {}
+flags:
+  hs-mt2calculator:
+    devel: false
 packages:
 - '.'
 - '../hep-utilities'
 - '../lhef-tools'
+- '../hs-mt2calculator'
 extra-deps: []
 resolver: lts-3.3
