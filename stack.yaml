@@ -1,0 +1,7 @@
+flags: {}
+packages:
+- '.'
+- '../hep-utilities'
+- '../lhef-tools'
+extra-deps: []
+resolver: lts-3.3
