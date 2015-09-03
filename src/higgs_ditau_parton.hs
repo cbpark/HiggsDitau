@@ -11,6 +11,7 @@ import           System.IO                   (IOMode (..), withFile)
 
 import           HEP.Data.LHEF
 import qualified HEP.Data.LHEF.PipesUtil     as U
+import           HEP.Kinematics.Variable     (mTBound)
 import           HEP.Kinematics.Variable.MT2 (mT2AsymmBisect)
 
 main :: IO ()
@@ -44,12 +45,18 @@ variables KinematicObjects { .. } =
   let mTtrue = transverseMassCluster visible missing
       mVisible = invariantMass visible
       mEffective = invariantMass (fourMomentum missing : visible)
-      mT2 = if length visible == 2
-            then let [visA, visB] = visible
-                 in mT2AsymmBisect visA visB missing 0 0
-            else -1
+      twoVisibles = if length visible /= 2 then [] else take 2 visible
+      (mT2, mTHiggsBound)
+        | null twoVisibles = (-10, -10)
+        | otherwise        = let (visA:(visB:_)) = twoVisibles
+                             in  ( mT2AsymmBisect visA visB missing 0 0
+                                 , mTBound        visA visB missing mTau )
   in [ ("mTtrue",   mTtrue)
      , ("mVisible", mVisible)
      , ("mEffective", mEffective)
      , ("mT2", mT2)
+     , ("mTHiggsBound", mTHiggsBound)
      ]
+
+mTau :: Double
+mTau = 1.77682

@@ -24,8 +24,9 @@ executable higgs_ditau_parton
   build-depends:       base >=4.8
                      , pipes
                      , pipes-bytestring
-                     , lhef-tools
+                     , hep-utilities
                      , hs-mt2calculator
+                     , lhef-tools
   extra-libraries:     MT2Calculator
   hs-source-dirs:      src
   default-language:    Haskell2010
