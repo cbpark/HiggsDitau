@@ -45,7 +45,7 @@ variables KinematicObjects { .. } =
   let mTtrue = transverseMassCluster visible missing
       mVisible = invariantMass visible
       mEffective = invariantMass (fourMomentum missing : visible)
-      twoVisibles = if length visible /= 2 then [] else take 2 visible
+      twoVisibles = if length visible /= 2 then [] else visible
       (mT2, mTHiggsBound)
         | null twoVisibles = (-10, -10)
         | otherwise        = let (visA:(visB:_)) = twoVisibles
