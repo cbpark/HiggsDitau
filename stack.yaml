@@ -1,8 +1,15 @@
 flags: {}
+
+extra-include-dirs:
+- /usr/local/include
+
+extra-lib-dirs:
+- /usr/local/lib
+
 packages:
 - '.'
-- '../hep-utilities'
-- '../lhef-tools'
-- '../hs-mt2calculator'
+- ../hep-utilities
+- ../lhef-tools
+- ../hs-mt2calculator
 extra-deps: []
 resolver: lts-3.4
