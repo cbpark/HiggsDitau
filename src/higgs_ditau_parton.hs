@@ -2,9 +2,8 @@
 
 module Main where
 
-import           Data.List                   (partition)
+import           Data.List                   (intercalate, partition)
 import           Pipes
-import           Pipes.ByteString            (fromHandle)
 import qualified Pipes.Prelude               as P
 import           System.Environment          (getArgs)
 import           System.IO                   (IOMode (..), withFile)
@@ -16,13 +15,16 @@ import           HEP.Kinematics.Variable.MT2 (mT2AsymmBisect)
 
 main :: IO ()
 main = do
+  putStrLn header
   args <- getArgs
   let infile = head args
   withFile infile ReadMode $ \hin ->
-    runEffect $ eventEntry (fromHandle hin)
-    >-> U.finalStates >-> U.groupByMother
+    runEffect $ U.eventEntry hin >-> U.finalStates >-> U.groupByMother
     >-> P.map (variables . mconcat . map part)
     >-> P.print
+
+    where header = "# " ++ intercalate ", "
+                   ["mTtrue", "mVisible", "mEffective", "mT2", "mTHiggsBound"]
 
 part :: [Particle] -> KinematicObjects
 part ps =
@@ -38,9 +40,12 @@ instance Monoid KinematicObjects where
   (KinematicObjects miss1 vis1) `mappend` (KinematicObjects miss2 vis2) =
     KinematicObjects (miss1 `mappend` miss2) (vis1 `mappend` vis2)
 
-type PartonLevelResult = [(String, Double)]
+newtype Result = Result { getResult :: [(String, Double)] }
 
-variables :: KinematicObjects -> PartonLevelResult
+instance Show Result where
+  show r = intercalate ", " $ map (show . snd) (getResult r)
+
+variables :: KinematicObjects -> Result
 variables KinematicObjects { .. } =
   let mTtrue = transverseMassCluster visible missing
       mVisible = invariantMass visible
@@ -51,12 +56,12 @@ variables KinematicObjects { .. } =
         | otherwise        = let (visA:(visB:_)) = twoVisibles
                              in  ( mT2AsymmBisect visA visB missing 0 0
                                  , mTBound        visA visB missing mTau )
-  in [ ("mTtrue",   mTtrue)
-     , ("mVisible", mVisible)
-     , ("mEffective", mEffective)
-     , ("mT2", mT2)
-     , ("mTHiggsBound", mTHiggsBound)
-     ]
+  in Result [ ("mTtrue",   mTtrue)
+            , ("mVisible", mVisible)
+            , ("mEffective", mEffective)
+            , ("mT2", mT2)
+            , ("mTHiggsBound", mTHiggsBound)
+            ]
 
 mTau :: Double
 mTau = 1.77682

@@ -23,11 +23,10 @@ executable higgs_ditau_parton
   -- other-extensions:
   build-depends:       base >=4.8
                      , pipes
-                     , pipes-bytestring
                      , hep-utilities
                      , hs-mt2calculator
                      , lhef-tools
   extra-libraries:     MT2Calculator
   hs-source-dirs:      src
   default-language:    Haskell2010
-  ghc-options:         -Wall -O2 -funbox-strict-fields -threaded
+  ghc-options:         -Wall -O2 -threaded -funbox-strict-fields
