@@ -15,16 +15,16 @@ import           HEP.Kinematics.Variable.MT2 (mT2AsymmBisect)
 
 main :: IO ()
 main = do
+  let header = "# " ++ intercalate ", "
+               ["mTtrue", "mVisible", "mEffective", "mT2", "mTHiggsBound"]
   putStrLn header
+
   args <- getArgs
   let infile = head args
   withFile infile ReadMode $ \hin ->
     runEffect $ U.eventEntry hin >-> U.finalStates >-> U.groupByMother
     >-> P.map (variables . mconcat . map part)
     >-> P.print
-
-    where header = "# " ++ intercalate ", "
-                   ["mTtrue", "mVisible", "mEffective", "mT2", "mTHiggsBound"]
 
 part :: [Particle] -> KinematicObjects
 part ps =
@@ -43,7 +43,7 @@ instance Monoid KinematicObjects where
 newtype Result = Result { getResult :: [(String, Double)] }
 
 instance Show Result where
-  show r = intercalate ", " $ map (show . snd) (getResult r)
+  show = intercalate ", " . map (show . snd) . getResult
 
 variables :: KinematicObjects -> Result
 variables KinematicObjects { .. } =
@@ -56,11 +56,11 @@ variables KinematicObjects { .. } =
         | otherwise        = let (visA:(visB:_)) = twoVisibles
                              in  ( mT2AsymmBisect visA visB missing 0 0
                                  , mTBound        visA visB missing mTau )
-  in Result [ ("mTtrue",   mTtrue)
-            , ("mVisible", mVisible)
-            , ("mEffective", mEffective)
-            , ("mT2", mT2)
-            , ("mTHiggsBound", mTHiggsBound)
+  in Result [ ("mTtrue",       mTtrue       )
+            , ("mVisible",     mVisible     )
+            , ("mEffective",   mEffective   )
+            , ("mT2",          mT2          )
+            , ("mTHiggsBound", mTHiggsBound )
             ]
 
 mTau :: Double
