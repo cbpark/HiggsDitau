@@ -19,8 +19,7 @@ main = do
                ["mTtrue", "mVisible", "mEffective", "mT2", "mTHiggsBound"]
   putStrLn header
 
-  args <- getArgs
-  let infile = head args
+  infile <- head <$> getArgs
   withFile infile ReadMode $ \hin ->
     runEffect $ U.eventEntry hin >-> U.finalStates >-> U.groupByMother
     >-> P.map (variables . mconcat . map part)
@@ -43,7 +42,7 @@ instance Monoid KinematicObjects where
 newtype Result = Result { getResult :: [(String, Double)] }
 
 instance Show Result where
-  show = intercalate ", " . map (show . snd) . getResult
+  show = intercalate "," . map (show . snd) . getResult
 
 variables :: KinematicObjects -> Result
 variables KinematicObjects { .. } =
