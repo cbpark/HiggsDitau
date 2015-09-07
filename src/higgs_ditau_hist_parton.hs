@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Main where
 
 import           Control.Monad.Trans.State.Strict
@@ -21,7 +23,7 @@ main = do
   putStrLn header
 
   infile <- head <$> getArgs
-  s <- withFile infile ReadMode getHists
+  s <- withFile infile ReadMode (getHists 10 90 100)
   mapM_ putStrLn (showHists s)
 
 data Variables = Variables { mTtrue       :: Double
@@ -36,30 +38,20 @@ data Hists = Hists { mTtrueHist       :: Hist1D Double
 
 instance Monoid Hists where
   mempty = Hists emptyHist emptyHist emptyHist emptyHist
-  h1 `mappend` h2 = Hists (mTtrueHist h1 `mappend` mTtrueHist h2)
-                          (mVisibleHist h1 `mappend` mVisibleHist h2)
-                          (mEffectiveHist h1 `mappend` mEffectiveHist h2)
+  h1 `mappend` h2 = Hists (      mTtrueHist h1 `mappend`       mTtrueHist h2)
+                          (    mVisibleHist h1 `mappend`     mVisibleHist h2)
+                          (  mEffectiveHist h1 `mappend`   mEffectiveHist h2)
                           (mTHiggsBoundHist h1 `mappend` mTHiggsBoundHist h2)
 
-showHists :: Hists -> [String]
-showHists hs = let bs = bins (mTtrueHist hs)
-                   mTtrue' = contents (mTtrueHist hs)
-                   mVisible' = contents (mVisibleHist hs)
-                   mEffective' = contents (mEffectiveHist hs)
-                   mTHiggsBound' = contents (mTHiggsBoundHist hs)
-               in map (intercalate ", " . map show) $
-                  transpose [bs, mTtrue', mVisible', mEffective', mTHiggsBound']
-
-getHists :: MonadIO m => Handle -> m Hists
-getHists hin = P.fold mappend mempty id hists
-  where hists = (getVariables . fromHandle) hin >-> P.map (varsToHists 10 90 100)
-
-varsToHists :: Int -> Double -> Double -> Variables -> Hists
-varsToHists nbin lo hi vs = Hists (varsToHists' [mTtrue vs])
-                                  (varsToHists' [mVisible vs])
-                                  (varsToHists' [mEffective vs])
-                                  (varsToHists' [mTHiggsBound vs])
-  where varsToHists' = histogram nbin lo hi
+getHists :: MonadIO m => Int -> Double -> Double -> Handle -> m Hists
+getHists nbin lo hi hin = P.fold mappend mempty id hists
+  where hists = (getVariables . fromHandle) hin >-> P.map varsToHists
+        varsToHists Variables { .. } =
+          let varsToHists' = histogram1 nbin lo hi
+          in Hists (varsToHists' mTtrue      )
+                   (varsToHists' mVisible    )
+                   (varsToHists' mEffective  )
+                   (varsToHists' mTHiggsBound)
 
 getVariables :: Monad m => Producer ByteString m () -> Producer Variables m ()
 getVariables s = do (r, s') <- lift $ runStateT (PA.parse vars) s
@@ -68,7 +60,7 @@ getVariables s = do (r, s') <- lift $ runStateT (PA.parse vars) s
 
 vars :: Parser Variables
 vars = do skipSpace
-          many' $ char '#' >> skipWhile (not . isEndOfLine) >> endOfLine
+          _ <- many' $ char '#' >> skipWhile (not . isEndOfLine) >> endOfLine
           mTtrue'       <- double
           char ',' >> skipSpace
           mVisible'     <- double
@@ -82,3 +74,12 @@ vars = do skipSpace
                            , mVisible     = mVisible'
                            , mEffective   = mEffective'
                            , mTHiggsBound = mTHiggsBound' }
+
+showHists :: Hists -> [String]
+showHists hs =
+  let (bs, mTtrue', mVisible', mEffective', mTHiggsBound') =
+        (,,,,) <$> bins . mTtrueHist
+        <*> contents . mTtrueHist     <*> contents . mVisibleHist
+        <*> contents . mEffectiveHist <*> contents . mTHiggsBoundHist $ hs
+  in map (intercalate ", " . map show) $
+     transpose [bs, mTtrue', mVisible', mEffective', mTHiggsBound']
