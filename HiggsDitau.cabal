@@ -32,10 +32,11 @@ executable higgs_ditau_parton
 
 executable higgs_ditau_hist_parton
   main-is:             higgs_ditau_hist_parton.hs
-  -- other-modules:
+  other-modules:       Analysis.Parton
   build-depends:       base >=4.8
                      , attoparsec
                      , bytestring
+                     , optparse-applicative
                      , pipes
                      , pipes-attoparsec
                      , pipes-bytestring
