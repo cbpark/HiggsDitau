@@ -11,7 +11,7 @@ import           System.IO                   (IOMode (..), withFile)
 import           HEP.Data.LHEF
 import qualified HEP.Data.LHEF.PipesUtil     as U
 import           HEP.Kinematics.Variable     (mTBound)
-import           HEP.Kinematics.Variable.MT2 (mT2SymmBisect)
+import           HEP.Kinematics.Variable.MT2 (mT2SymmChengHanBisect)
 
 main :: IO ()
 main = do
@@ -53,8 +53,8 @@ variables KinematicObjects { .. } =
       (mT2, mTHiggsBound)
         | null twoVisibles = (-10, -10)
         | otherwise        = let (visA:(visB:_)) = twoVisibles
-                             in  ( mT2SymmBisect visA visB missing 0
-                                 , mTBound       visA visB missing mTau )
+                             in ( mT2SymmChengHanBisect visA visB missing 0
+                                , mTBound visA visB missing mTau )
   in Result [ ("mTtrue",       mTtrue       )
             , ("mVisible",     mVisible     )
             , ("mEffective",   mEffective   )
