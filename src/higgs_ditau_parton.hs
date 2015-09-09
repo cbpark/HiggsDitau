@@ -11,7 +11,7 @@ import           System.IO                   (IOMode (..), withFile)
 import           HEP.Data.LHEF
 import qualified HEP.Data.LHEF.PipesUtil     as U
 import           HEP.Kinematics.Variable     (mTBound)
-import           HEP.Kinematics.Variable.MT2 (mT2SymmChengHanBisect)
+import           HEP.Kinematics.Variable.MT2 (mT2SymmMinuit2)
 
 main :: IO ()
 main = do
@@ -51,9 +51,9 @@ variables KinematicObjects { .. } =
       mEffective = invariantMass (fourMomentum missing : visible)
       twoVisibles = if length visible /= 2 then [] else visible
       (mT2, mTHiggsBound)
-        | null twoVisibles = (-10, -10)
+        | null twoVisibles = (-1, -1)
         | otherwise        = let (visA:(visB:_)) = twoVisibles
-                             in ( mT2SymmChengHanBisect visA visB missing 0
+                             in ( mT2func visA visB missing 0
                                 , mTBound visA visB missing mTau )
   in Result [ ("mTtrue",       mTtrue       )
             , ("mVisible",     mVisible     )
@@ -61,6 +61,11 @@ variables KinematicObjects { .. } =
             , ("mT2",          mT2          )
             , ("mTHiggsBound", mTHiggsBound )
             ]
+
+mT2func :: FourMomentum -> FourMomentum -> TransverseMomentum -> Double -> Double
+mT2func visA visB ptmiss mInv = case mT2SymmMinuit2 visA visB ptmiss mInv of
+                                  Right (val, _, _) -> val
+                                  _                 -> -10
 
 mTau :: Double
 mTau = 1.77682
