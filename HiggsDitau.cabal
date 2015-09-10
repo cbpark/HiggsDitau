@@ -30,6 +30,16 @@ executable higgs_ditau_parton
   default-language:    Haskell2010
   ghc-options:         -Wall -O2 -threaded -funbox-strict-fields
 
+executable higgs_ditau_check_parton
+  main-is:             higgs_ditau_check_parton.hs
+  build-depends:       base >=4.8
+                     , pipes
+                     , hep-utilities
+                     , lhef-tools
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options:         -Wall -O2 -threaded -funbox-strict-fields
+
 executable higgs_ditau_hist_parton
   main-is:             higgs_ditau_hist_parton.hs
   other-modules:       Analysis.Parton
