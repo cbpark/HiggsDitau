@@ -26,15 +26,16 @@ main = do
     >-> P.print
 
 basicSelection :: Monad m => Pipe [Particle] [Particle] m ()
-basicSelection = P.map (filter ((||) <$> ((`elem` neutrinos) . idOf)
-                                <*> ((&&) <$> ((>0.5) . pt) <*> ((<2.5) . abs . eta))))
+basicSelection = P.map $ filter ((||) <$> isNeu <*> isWithinThres)
+  where isNeu = (`elem` neutrinos) . idOf
+        isWithinThres = (&&) <$> (>0.5) . pt <*> (<2.5) . abs . eta
 
 part :: [Particle] -> KinematicObjects
 part ps =
   let (invis, vis) = partition ((`elem` neutrinos) . idOf) ps
       visSum = momentumSum vis
-      visSelected | pt visSum > 20.0 = [visSum]
-                  | otherwise        = []
+      visSelected | pt visSum > 20.0 && (abs . eta) visSum < 2.5 = [visSum]
+                  | otherwise                                    = []
   in KinematicObjects ((transverseVector . momentumSum) invis) visSelected
 
 data KinematicObjects = KinematicObjects { missing :: TransverseMomentum
@@ -64,14 +65,12 @@ variables KinematicObjects { .. }
                 , ("mVisible",     mVisible     )
                 , ("mEffective",   mEffective   )
                 , ("mT2",          mT2          )
-                , ("mTHiggsBound", mTHiggsBound )
-                ]
-  | otherwise = Result [ ("mTtrue",       0)
-                       , ("mVisible",     0)
-                       , ("mEffective",   0)
-                       , ("mT2",          0)
-                       , ("mTHiggsBound", 0)
-                       ]
+                , ("mTHiggsBound", mTHiggsBound ) ]
+  | otherwise = Result [ ("mTtrue",       -1)
+                       , ("mVisible",     -1)
+                       , ("mEffective",   -1)
+                       , ("mT2",          -1)
+                       , ("mTHiggsBound", -1) ]
 
 mT2func :: FourMomentum -> FourMomentum -> TransverseMomentum -> Double -> Double
 mT2func visA visB ptmiss mInv = case mT2SymmMinuit2 visA visB ptmiss mInv of
