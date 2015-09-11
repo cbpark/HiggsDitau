@@ -25,14 +25,16 @@ main = do
     >-> U.groupByMother >-> P.map (variables . mconcat . map part)
     >-> P.print
 
+isNeutrino :: Particle -> Bool
+isNeutrino = (`elem` neutrinos) . idOf
+
 basicSelection :: Monad m => Pipe [Particle] [Particle] m ()
-basicSelection = P.map $ filter ((||) <$> isNeu <*> isWithinThres)
-  where isNeu = (`elem` neutrinos) . idOf
-        isWithinThres = (&&) <$> (>0.5) . pt <*> (<2.5) . abs . eta
+basicSelection = P.map $ filter ((||) <$> isNeutrino <*> condThres)
+  where condThres = (&&) <$> (>0.5) . pt <*> (<2.5) . abs . eta
 
 part :: [Particle] -> KinematicObjects
 part ps =
-  let (invis, vis) = partition ((`elem` neutrinos) . idOf) ps
+  let (invis, vis) = partition isNeutrino ps
       visSum = momentumSum vis
       visSelected | pt visSum > 20.0 && (abs . eta) visSum < 2.5 = [visSum]
                   | otherwise                                    = []
@@ -44,7 +46,7 @@ data KinematicObjects = KinematicObjects { missing :: TransverseMomentum
 
 instance Monoid KinematicObjects where
   mempty = KinematicObjects zeroV2 []
-  (KinematicObjects miss1 vis1) `mappend` (KinematicObjects miss2 vis2) =
+  KinematicObjects miss1 vis1 `mappend` KinematicObjects miss2 vis2 =
     KinematicObjects (miss1 `mappend` miss2) (vis1 `mappend` vis2)
 
 newtype Result = Result { getResult :: [(String, Double)] }
