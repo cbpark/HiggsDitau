@@ -8,5 +8,8 @@ cabal.sandbox.config
 .*.swp
 TAGS
 .stack-work
+*.lhco
+*.lhco.gz
 *.lhe
+*.lhe.gz
 *.dat

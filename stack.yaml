@@ -12,4 +12,4 @@ packages:
 - ../lhef-tools
 - ../hs-mt2calculator
 extra-deps: []
-resolver: lts-3.4
+resolver: lts-3.8
