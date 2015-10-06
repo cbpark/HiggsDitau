@@ -2,11 +2,12 @@
 
 module Main where
 
+import           Codec.Compression.GZip      (decompress)
+import qualified Data.ByteString.Lazy        as L
 import           Data.List                   (intercalate, partition)
 import           Pipes
 import qualified Pipes.Prelude               as P
 import           System.Environment          (getArgs)
-import           System.IO                   (IOMode (..), withFile)
 
 import           HEP.Data.LHEF
 import qualified HEP.Data.LHEF.PipesUtil     as U
@@ -19,9 +20,10 @@ main = do
                ["mTtrue", "mVisible", "mEffective", "mT2", "mTHiggsBound"]
   putStrLn header
 
-  infile <- head <$> getArgs
-  withFile infile ReadMode $ \hin ->
-    runEffect $ U.eventEntry hin >-> U.finalStates >-> basicSelection
+  infile <- fmap head getArgs
+  evStr <- fmap decompress (L.readFile infile)
+  runEffect $ (U.eventEntryFromBS . L.toStrict) evStr
+    >-> U.finalStates >-> basicSelection
     >-> U.groupByMother >-> P.map (variables . mconcat . map part)
     >-> P.print
 

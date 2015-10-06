@@ -21,7 +21,9 @@ executable higgs_ditau_parton
   main-is:             higgs_ditau_parton.hs
   -- other-modules:
   build-depends:       base >=4.8
+                     , bytestring
                      , pipes
+                     , zlib
                      , hep-utilities
                      , hs-mt2calculator
                      , lhef-tools
@@ -33,7 +35,9 @@ executable higgs_ditau_parton
 executable higgs_ditau_check_parton
   main-is:             higgs_ditau_check_parton.hs
   build-depends:       base >=4.8
+                     , bytestring
                      , pipes
+                     , zlib
                      , hep-utilities
                      , lhef-tools
   hs-source-dirs:      src

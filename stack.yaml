@@ -9,6 +9,7 @@ extra-lib-dirs:
 packages:
 - '.'
 - ../hep-utilities
+- ../lhco-tools
 - ../lhef-tools
 - ../hs-mt2calculator
 extra-deps: []

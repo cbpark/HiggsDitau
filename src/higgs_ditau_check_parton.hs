@@ -1,10 +1,11 @@
 module Main where
 
+import           Codec.Compression.GZip  (decompress)
+import qualified Data.ByteString.Lazy    as L
 import           Data.List               (intercalate)
 import           Pipes
 import qualified Pipes.Prelude           as P
 import           System.Environment      (getArgs)
-import           System.IO               (IOMode (..), withFile)
 
 import           HEP.Data.LHEF
 import qualified HEP.Data.LHEF.PipesUtil as U
@@ -14,10 +15,10 @@ main = do
   let header = "# " ++ intercalate ", " ["mAll", "mTau1", "mTau2"]
   putStrLn header
 
-  infile <- head <$> getArgs
-  withFile infile ReadMode $ \hin ->
-    runEffect $ U.eventEntry hin >-> U.finalStates >-> U.groupByMother
-    >-> P.map invMasses
+  infile <- fmap head getArgs
+  evStr <- fmap decompress (L.readFile infile)
+  runEffect $ (U.eventEntryFromBS . L.toStrict) evStr
+    >-> U.finalStates >-> U.groupByMother >-> P.map invMasses
     >-> P.print
 
 newtype InvariantMasses = InvariantMasses { getMasses :: (Double, Double, Double) }
