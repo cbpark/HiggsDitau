@@ -3,7 +3,7 @@
 module Main where
 
 import           Codec.Compression.GZip      (decompress)
-import qualified Data.ByteString.Lazy        as L
+import qualified Data.ByteString.Lazy.Char8  as L
 import           Data.List                   (intercalate, partition)
 import           Pipes
 import qualified Pipes.Prelude               as P

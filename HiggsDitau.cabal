@@ -19,7 +19,6 @@ source-repository head
 
 executable higgs_ditau_parton
   main-is:             higgs_ditau_parton.hs
-  -- other-modules:
   build-depends:       base >=4.8
                      , bytestring
                      , pipes
@@ -56,6 +55,21 @@ executable higgs_ditau_hist_parton
                      , pipes-bytestring
                      , transformers
                      , hep-utilities
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options:         -Wall -O2 -threaded -funbox-strict-fields
+
+executable higgs_ditau_jet
+  main-is:             higgs_ditau_jet.hs
+  -- other-modules:
+  build-depends:       base >=4.8
+                     , bytestring
+                     , pipes
+                     , zlib
+                     , hep-utilities
+                     , hs-mt2calculator
+                     , lhco-tools
+  extra-libraries:     MT2Calculator
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall -O2 -threaded -funbox-strict-fields
