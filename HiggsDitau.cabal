@@ -65,6 +65,7 @@ executable higgs_ditau_jet
   build-depends:       base >=4.8
                      , bytestring
                      , pipes
+                     , transformers
                      , zlib
                      , hep-utilities
                      , hs-mt2calculator
