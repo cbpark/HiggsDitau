@@ -17,7 +17,8 @@ import           HEP.Kinematics.Variable.MT2 (mT2SymmMinuit2)
 main :: IO ()
 main = do
   let header = "# " ++ intercalate ", "
-               ["mTtrue", "mVisible", "mEffective", "mT2", "mTHiggsBound"]
+               [ "mTtrue", "mVisible", "mEffective", "mT2", "mTHiggsBound"
+               , "deltaR" ]
   putStrLn header
 
   infile <- fmap head getArgs
@@ -62,19 +63,22 @@ variables KinematicObjects { .. }
       let mTtrue = transverseMassCluster visible missing
           mVisible = invariantMass visible
           mEffective = invariantMass (fourMomentum missing : visible)
-          (mT2, mTHiggsBound) = let (visA:(visB:_)) = visible
-                                in ( mT2func visA visB missing 0
-                                   , mTBound visA visB missing mTau )
+          (mT2, mTHiggsBound, dR) = let (visA:(visB:_)) = visible
+                                    in ( mT2func visA visB missing 0
+                                       , mTBound visA visB missing mTau
+                                       , deltaR visA visB)
       in Result [ ("mTtrue",       mTtrue       )
                 , ("mVisible",     mVisible     )
                 , ("mEffective",   mEffective   )
                 , ("mT2",          mT2          )
-                , ("mTHiggsBound", mTHiggsBound ) ]
+                , ("mTHiggsBound", mTHiggsBound )
+                , ("deltaR",       dR           ) ]
   | otherwise = Result [ ("mTtrue",       -1)
                        , ("mVisible",     -1)
                        , ("mEffective",   -1)
                        , ("mT2",          -1)
-                       , ("mTHiggsBound", -1) ]
+                       , ("mTHiggsBound", -1)
+                       , ("deltaR",       -1) ]
 
 mT2func :: FourMomentum -> FourMomentum -> TransverseMomentum -> Double -> Double
 mT2func visA visB ptmiss mInv = case mT2SymmMinuit2 visA visB ptmiss mInv of

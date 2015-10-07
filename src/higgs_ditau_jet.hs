@@ -56,8 +56,8 @@ data Objects = Objects { missing     :: TransverseMomentum
 takeLeptonMet :: Event -> Objects
 takeLeptonMet ev@Event {..} =
   let electrons = map fourMomentum electron
-      muons = map fourMomentum muon
-      taus = map fourMomentum tau
+      muons     = map fourMomentum muon
+      taus      = map fourMomentum tau
       leptons = sortBy ptCompare (electrons ++ muons ++ taus)
       miss = runReader missingET ev
   in Objects miss leptons
