@@ -58,7 +58,9 @@ vars = do skipSpace
           char ',' >> skipSpace
           _             <- double
           char ',' >> skipSpace
-          mTHiggsBound' <- double <* skipSpace
+          mTHiggsBound' <- double
+          char ',' >> skipSpace
+          _             <- double <* skipSpace
           return Variables { mTtrue       = mTtrue'
                            , mVisible     = mVisible'
                            , mEffective   = mEffective'
