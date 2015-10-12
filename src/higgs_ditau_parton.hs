@@ -48,7 +48,7 @@ data KinematicObjects = KinematicObjects { missing :: TransverseMomentum
                                          } deriving Show
 
 instance Monoid KinematicObjects where
-  mempty = KinematicObjects zeroV2 []
+  mempty = KinematicObjects zero []
   KinematicObjects miss1 vis1 `mappend` KinematicObjects miss2 vis2 =
     KinematicObjects (miss1 `mappend` miss2) (vis1 `mappend` vis2)
 
