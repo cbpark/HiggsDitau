@@ -3,6 +3,7 @@
 module Main where
 
 import           Codec.Compression.GZip      (decompress)
+import           Control.Monad               (forever)
 import qualified Data.ByteString.Lazy.Char8  as L
 import           Data.List                   (intercalate, partition)
 import           Pipes
@@ -11,7 +12,7 @@ import           System.Environment          (getArgs)
 
 import           HEP.Data.LHEF
 import qualified HEP.Data.LHEF.PipesUtil     as U
-import           HEP.Kinematics.Variable     (mTBound)
+import           HEP.Kinematics.Variable     (mTLowerBound)
 import           HEP.Kinematics.Variable.MT2 (mT2SymmMinuit2)
 
 main :: IO ()
@@ -24,9 +25,9 @@ main = do
   infile <- fmap head getArgs
   evStr <- fmap decompress (L.readFile infile)
   runEffect $ (U.eventEntryFromBS . L.toStrict) evStr
-    >-> U.finalStates >-> basicSelection
-    >-> U.groupByMother >-> P.map (variables . mconcat . map part)
-    >-> P.print
+       >-> U.finalStates >-> basicSelection
+       >-> U.groupByMother >-> P.map (mconcat . map part) >-> variables
+       >-> P.print
 
 isNeutrino :: Particle -> Bool
 isNeutrino = (`elem` neutrinos) . idOf
@@ -57,28 +58,29 @@ newtype Result = Result { getResult :: [(String, Double)] }
 instance Show Result where
   show = intercalate "," . map (show . snd) . getResult
 
-variables :: KinematicObjects -> Result
-variables KinematicObjects { .. }
-  | pt missing > 20.0 && length visible == 2 =
-      let mTtrue = transverseMassCluster visible missing
-          mVisible = invariantMass visible
-          mEffective = invariantMass (fourMomentum missing : visible)
-          (mT2, mTHiggsBound, dR) = let (visA:(visB:_)) = visible
-                                    in ( mT2func visA visB missing 0
-                                       , mTBound visA visB missing mTau
-                                       , deltaR visA visB)
-      in Result [ ("mTtrue",       mTtrue       )
-                , ("mVisible",     mVisible     )
-                , ("mEffective",   mEffective   )
-                , ("mT2",          mT2          )
-                , ("mTHiggsBound", mTHiggsBound )
-                , ("deltaR",       dR           ) ]
-  | otherwise = Result [ ("mTtrue",       -1)
-                       , ("mVisible",     -1)
-                       , ("mEffective",   -1)
-                       , ("mT2",          -1)
-                       , ("mTHiggsBound", -1)
-                       , ("deltaR",       -1) ]
+variables :: MonadIO m => Pipe KinematicObjects Result m ()
+variables = forever $ do
+  KinematicObjects { .. } <- await
+  if pt missing > 20.0 && length visible == 2
+  then do let mTtrue = transverseMassCluster visible missing
+              mVisible = invariantMass visible
+              mEffective = invariantMass (fourMomentum missing : visible)
+              (visA:(visB:_)) = visible
+              mT2 = mT2func visA visB missing 0
+              dR = deltaR visA visB
+          mTHiggsBound <- liftIO $ mTLowerBound visA visB missing mTau
+          yield $ Result [ ("mTtrue",       mTtrue       )
+                         , ("mVisible",     mVisible     )
+                         , ("mEffective",   mEffective   )
+                         , ("mT2",          mT2          )
+                         , ("mTHiggsBound", mTHiggsBound )
+                         , ("deltaR",       dR           ) ]
+  else yield $ Result [ ("mTtrue",       -1)
+                      , ("mVisible",     -1)
+                      , ("mEffective",   -1)
+                      , ("mT2",          -1)
+                      , ("mTHiggsBound", -1)
+                      , ("deltaR",       -1) ]
 
 mT2func :: FourMomentum -> FourMomentum -> TransverseMomentum -> Double -> Double
 mT2func visA visB ptmiss mInv = case mT2SymmMinuit2 visA visB ptmiss mInv of
