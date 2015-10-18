@@ -11,6 +11,5 @@ packages:
 - ../hep-utilities
 - ../lhco-tools
 - ../lhef-tools
-- ../hs-mt2calculator
 extra-deps: []
-resolver: lts-3.8
+resolver: lts-3.9

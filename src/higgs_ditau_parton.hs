@@ -2,18 +2,17 @@
 
 module Main where
 
-import           Codec.Compression.GZip      (decompress)
-import           Control.Monad               (forever)
-import qualified Data.ByteString.Lazy.Char8  as L
-import           Data.List                   (intercalate, partition)
+import           Codec.Compression.GZip     (decompress)
+import           Control.Monad              (forever)
+import qualified Data.ByteString.Lazy.Char8 as L
+import           Data.List                  (intercalate, partition)
 import           Pipes
-import qualified Pipes.Prelude               as P
-import           System.Environment          (getArgs)
+import qualified Pipes.Prelude              as P
+import           System.Environment         (getArgs)
 
 import           HEP.Data.LHEF
-import qualified HEP.Data.LHEF.PipesUtil     as U
-import           HEP.Kinematics.Variable     (mTLowerBound)
-import           HEP.Kinematics.Variable.MT2 (mT2SymmMinuit2)
+import qualified HEP.Data.LHEF.PipesUtil    as U
+import           HEP.Kinematics.Variable    (mT2Symm, mTLowerBound)
 
 main :: IO ()
 main = do
@@ -66,7 +65,7 @@ variables = forever $ do
               mVisible = invariantMass visible
               mEffective = invariantMass (fourMomentum missing : visible)
               (visA:(visB:_)) = visible
-              mT2 = mT2func visA visB missing 0
+              mT2 = mT2Symm visA visB missing 0
               dR = deltaR visA visB
           mTHiggsBound <- liftIO $ mTLowerBound visA visB missing mTau
           yield $ Result [ ("mTtrue",       mTtrue       )
@@ -81,11 +80,6 @@ variables = forever $ do
                       , ("mT2",          -1)
                       , ("mTHiggsBound", -1)
                       , ("deltaR",       -1) ]
-
-mT2func :: FourMomentum -> FourMomentum -> TransverseMomentum -> Double -> Double
-mT2func visA visB ptmiss mInv = case mT2SymmMinuit2 visA visB ptmiss mInv of
-                                  Right (val, _, _) -> val
-                                  _                 -> -10
 
 mTau :: Double
 mTau = 1.77682

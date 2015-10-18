@@ -24,7 +24,6 @@ executable higgs_ditau_parton
                      , pipes
                      , zlib
                      , hep-utilities
-                     , hs-mt2calculator
                      , lhef-tools
   extra-libraries:     MT2Calculator
   hs-source-dirs:      src
@@ -68,7 +67,6 @@ executable higgs_ditau_jet
                      , transformers
                      , zlib
                      , hep-utilities
-                     , hs-mt2calculator
                      , lhco-tools
   extra-libraries:     MT2Calculator
   hs-source-dirs:      src
