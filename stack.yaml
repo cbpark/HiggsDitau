@@ -12,4 +12,4 @@ packages:
 - ../lhco-tools
 - ../lhef-tools
 extra-deps: []
-resolver: lts-3.9
+resolver: lts-3.12

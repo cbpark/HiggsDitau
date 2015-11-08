@@ -25,7 +25,7 @@ executable higgs_ditau_parton
                      , zlib
                      , hep-utilities
                      , lhef-tools
-  extra-libraries:     MT2Calculator
+  -- extra-libraries:     MT2Calculator
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall -O2 -threaded -funbox-strict-fields
@@ -68,7 +68,7 @@ executable higgs_ditau_jet
                      , zlib
                      , hep-utilities
                      , lhco-tools
-  extra-libraries:     MT2Calculator
+  -- extra-libraries:     MT2Calculator
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall -O2 -threaded -funbox-strict-fields
